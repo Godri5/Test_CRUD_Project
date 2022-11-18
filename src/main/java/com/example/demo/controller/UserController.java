@@ -16,9 +16,9 @@ public class UserController {
     public @ResponseBody String addNewUser (@RequestParam String name, @RequestParam String email) {
         User n = new User();
         n.setName(name);
-        n.setEmail(email);
+        n.setContactNumber(email);
         userRepository.save(n);
-        return "Saved";
+        return "Saved" + n.toString();
     }
 
     @GetMapping(path = "/all")
@@ -27,10 +27,10 @@ public class UserController {
     }
 
     @PutMapping(path = "/put/{id}")
-    public @ResponseBody String updateUserById (@RequestParam String name, @RequestParam String email, @PathVariable Integer id) {
+    public @ResponseBody String updateUserById (@RequestParam String name, @RequestParam String contactNumber, @PathVariable Integer id) {
         User n = userRepository.findById(id).get();
         n.setName(name);
-        n.setEmail(email);
+        n.setContactNumber(contactNumber);
         userRepository.save(n);
         return "Updated" + n.toString();
     }
@@ -38,6 +38,16 @@ public class UserController {
     @DeleteMapping(path = "/del/{id}")
     public @ResponseBody String deleteUserById (@PathVariable Integer id) {
         userRepository.deleteById(id);
-        return "Deleted successfully";
+        return "User " + id + "deleted successfully";
+    }
+
+    @DeleteMapping(path = "/del/{name}")
+    public @ResponseBody String deleteUserByName (@PathVariable String name) {
+        for (User user : getAllUsers()) {
+            if (user.getName().equalsIgnoreCase(name)) {
+                userRepository.deleteById(user.getId());
+            }
+        }
+        return "User" + name + "deleted successfully";
     }
 }
