@@ -3,51 +3,55 @@ package com.example.demo.controller;
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping(path = "/user")
+import java.util.ArrayList;
+import java.util.List;
+
+@RestController
+@RequestMapping(path = "/users")
 public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping(path = "/add")
-    public @ResponseBody String addNewUser (@RequestParam String name, @RequestParam String email) {
-        User n = new User();
-        n.setName(name);
-        n.setContactNumber(email);
-        userRepository.save(n);
-        return "Saved" + n.toString();
+
+    @GetMapping()
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        userRepository.findAll().forEach(users::add);
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/all")
-    public @ResponseBody Iterable<User> getAllUsers() {
-        return userRepository.findAll();
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        return new ResponseEntity<>(userRepository.findById(id).get(), HttpStatus.OK);
     }
 
-    @PutMapping(path = "/put/{id}")
-    public @ResponseBody String updateUserById (@RequestParam String name, @RequestParam String contactNumber, @PathVariable Integer id) {
-        User n = userRepository.findById(id).get();
-        n.setName(name);
-        n.setContactNumber(contactNumber);
-        userRepository.save(n);
-        return "Updated" + n.toString();
+    @PostMapping()
+    public ResponseEntity<User> addNewUser (@RequestBody User user) {
+        User n = userRepository.save(new User(user.getName(), user.getContactNumber()));
+        return new ResponseEntity<>(n, HttpStatus.CREATED);
     }
 
-    @DeleteMapping(path = "/del/{id}")
-    public @ResponseBody String deleteUserById (@PathVariable Integer id) {
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<User> updateUserById (@RequestBody User user, @PathVariable Integer id) {
+        User temp = userRepository.findById(id).get();
+        temp.setName(user.getName());
+        temp.setContactNumber(user.getContactNumber());
+        return new ResponseEntity<>(userRepository.save(temp), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteUserById (@PathVariable Integer id) {
         userRepository.deleteById(id);
-        return "User " + id + "deleted successfully";
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @DeleteMapping(path = "/del/{name}")
-    public @ResponseBody String deleteUserByName (@PathVariable String name) {
-        for (User user : getAllUsers()) {
-            if (user.getName().equalsIgnoreCase(name)) {
-                userRepository.deleteById(user.getId());
-            }
-        }
-        return "User" + name + "deleted successfully";
+    @DeleteMapping()
+    public ResponseEntity<List<User>> deleteUserByName () {
+        userRepository.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
