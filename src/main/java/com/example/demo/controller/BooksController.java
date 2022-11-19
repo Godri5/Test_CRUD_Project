@@ -23,6 +23,9 @@ public class BooksController {
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * returns all books from DB
+     * */
     @GetMapping()
     public ResponseEntity<List<Book>> getAllBooks() {
         List<Book> books = new ArrayList<>();
@@ -34,11 +37,19 @@ public class BooksController {
         return new ResponseEntity<>(books, HttpStatus.OK);
     }
 
+    /**
+     * returns one book by it ID
+     * @param id - id from primary key of books table
+    * */
     @GetMapping(path = "/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Integer id) {
         return new ResponseEntity<>(booksRepository.findById(id).get(), HttpStatus.OK);
     }
 
+    /**
+     * returns all books of one specific user
+     * @param userId - id from primary key of users table
+     * */
     @GetMapping(path = "/{userId}/books")
     public ResponseEntity<List<Book>> getAllBooksByUserId(@PathVariable Integer userId) {
         List<Book> books = new ArrayList<>(userRepository.findById(userId).get().getBook());
@@ -46,15 +57,23 @@ public class BooksController {
 
     }
 
-    @PostMapping(path = "/{user_id}/books")
-    public ResponseEntity<Book> addNewBookByUserId(@RequestBody Book book, @PathVariable Integer user_id) {
-        Book temp = userRepository.findById(user_id).map(user -> {
+    /**
+     * add new book to DB and connect it with the specific user
+     * @param userId - id from primary key of users table
+     * */
+    @PostMapping(path = "/{userId}/books")
+    public ResponseEntity<Book> addNewBookByUserId(@RequestBody Book book, @PathVariable Integer userId) {
+        Book temp = userRepository.findById(userId).map(user -> {
             user.getBook().add(book);
             return booksRepository.save(book);
         }).get();
         return new ResponseEntity<>(temp, HttpStatus.CREATED);
     }
 
+    /**
+     * rewrite specific book in DB
+     * @param id - id from primary key of books table
+     * */
     @PutMapping(path = "/{id}")
     public ResponseEntity<Book> updateBookById(@RequestBody Book book, @PathVariable Integer id) {
         Book temp = booksRepository.findById(id).get();
@@ -64,6 +83,10 @@ public class BooksController {
         return new ResponseEntity<>(booksRepository.save(temp), HttpStatus.OK);
     }
 
+    /**
+     * delete all books of one specific user from DB
+     * @param userId - id from primary key of users table
+     * */
     @DeleteMapping(path = "/{userId}/books")
     public ResponseEntity<List<Book>> deleteAllBooksByUserId(@PathVariable Integer userId) {
         User user = userRepository.findById(userId).get();
@@ -72,12 +95,19 @@ public class BooksController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * delete one specific book from DB
+     * @param id - id from primary key of books table
+     * */
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<HttpStatus> deleteBookById(@PathVariable Integer id) {
         booksRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * delete all books from DB
+     * */
     @DeleteMapping()
     public ResponseEntity<List<Book>> deleteAllBooks() {
         booksRepository.deleteAll();
