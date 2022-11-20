@@ -89,9 +89,7 @@ public class BooksController {
      * */
     @DeleteMapping(path = "/{userId}/books")
     public ResponseEntity<List<Book>> deleteAllBooksByUserId(@PathVariable Integer userId) {
-        User user = userRepository.findById(userId).get();
-        user.setBook(new HashSet<>());
-        userRepository.save(user);
+        booksRepository.deleteAll(getAllBooksByUserId(userId).getBody());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
