@@ -41,7 +41,7 @@ public class UserController {
      * */
     @PostMapping()
     public ResponseEntity<User> addNewUser (@RequestBody User user) {
-        User n = userRepository.save(new User(user.getName(), user.getContactNumber()));
+        User n = userRepository.save(user);
         return new ResponseEntity<>(n, HttpStatus.CREATED);
     }
 

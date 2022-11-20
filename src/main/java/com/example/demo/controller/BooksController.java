@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Book;
-import com.example.demo.entity.User;
 import com.example.demo.repository.BooksRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @RestController
@@ -52,7 +50,7 @@ public class BooksController {
      * */
     @GetMapping(path = "/{userId}/books")
     public ResponseEntity<List<Book>> getAllBooksByUserId(@PathVariable Integer userId) {
-        List<Book> books = new ArrayList<>(userRepository.findById(userId).get().getBook());
+        List<Book> books = booksRepository.findByUserId(userId);
         return new ResponseEntity<>(books, HttpStatus.OK);
 
     }
@@ -62,9 +60,9 @@ public class BooksController {
      * @param userId - id from primary key of users table
      * */
     @PostMapping(path = "/{userId}/books")
-    public ResponseEntity<Book> addNewBookByUserId(@RequestBody Book book, @PathVariable Integer userId) {
+    public ResponseEntity<Book> addNewBookByUserId(@RequestBody Book book, @PathVariable(value = "userId") Integer userId) {
         Book temp = userRepository.findById(userId).map(user -> {
-            user.getBook().add(book);
+            book.setUser(user);
             return booksRepository.save(book);
         }).get();
         return new ResponseEntity<>(temp, HttpStatus.CREATED);
@@ -79,7 +77,7 @@ public class BooksController {
         Book temp = booksRepository.findById(id).get();
         temp.setTitle(book.getTitle());
         temp.setAuthor(book.getAuthor());
-        temp.setReturningTime(book.getReturningTime());
+        temp.setReturningDate(book.getReturningDate());
         return new ResponseEntity<>(booksRepository.save(temp), HttpStatus.OK);
     }
 
